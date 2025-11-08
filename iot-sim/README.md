@@ -197,7 +197,7 @@ IoT-Fire-Detection-and-Safety-System-
 ---
 
 ## 👨‍💻 Author  
-**dburan** – IoT & Cloud Computing Project (CDV 2024)  
+**dburan** – IoT & Cloud Computing Project (CDV  Dmytro Buran 29911)  
 📧 dburan@edu.cdv.pl  
 
 ---
