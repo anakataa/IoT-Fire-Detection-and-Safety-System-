@@ -105,7 +105,7 @@ Install:
 
 ### 1️⃣ Clone the Repository  
 ```bash
-git clone https://github.com/dburan/IoT-Fire-Detection-and-Safety-System-.git
+git clone https://github.com/anakataa/IoT-Fire-Detection-and-Safety-System-.git
 cd IoT-Fire-Detection-and-Safety-System-
 ```
 
