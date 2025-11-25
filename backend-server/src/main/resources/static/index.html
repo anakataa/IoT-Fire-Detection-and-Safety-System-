@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fire Monitoring Dashboard</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { color: #333; }
+        h2 { color: #555; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+
+        /* Form Styles */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #218838; }
+
+        /* Result Styles */
+        #result { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; display: none; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .total { font-weight: bold; font-size: 1.2em; color: #007bff; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;}
+
+        /* API Links */
+        .links a { display: inline-block; margin-right: 15px; color: #007bff; text-decoration: none; }
+        .links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<h1>🔥 Fire System Dashboard</h1>
+
+<!-- CALCULATOR SECTION -->
+<div class="card">
+    <h2>💰 Cost Calculator</h2>
+    <div class="form-group">
+        <label>Number of Sensors:</label>
+        <input type="number" id="sensors" value="10" min="1">
+    </div>
+    <div class="form-group">
+        <label>Number of Rooms:</label>
+        <input type="number" id="rooms" value="4" min="1">
+    </div>
+    <button onclick="calculateCost()">Calculate Cost</button>
+
+    <div id="result">
+        <!-- Results will appear here -->
+    </div>
+</div>
+
+<!-- API LINKS SECTION -->
+<div class="card">
+    <h2>📡 API Data (JSON)</h2>
+    <p>Quick links to check raw data:</p>
+    <div class="links">
+        <a href="/api/telemetry" target="_blank">📄 Telemetry (DB)</a>
+        <a href="/api/alarms" target="_blank">🚨 All Alarms</a>
+        <a href="/api/alarms/critical" target="_blank">🔥 Critical Alarms</a>
+    </div>
+</div>
+
+<script>
+    async function calculateCost() {
+        const sensors = document.getElementById('sensors').value;
+        const rooms = document.getElementById('rooms').value;
+        const resultDiv = document.getElementById('result');
+
+        try {
+            // 1. Fetch data from YOUR backend
+            const response = await fetch(`/api/cost?sensors=${sensors}&rooms=${rooms}`);
+
+            if (!response.ok) {
+                alert("Server Error!");
+                return;
+            }
+
+            // 2. Get JSON
+            const data = await response.json();
+
+            // 3. Display results nicely
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                    <div class="price-row"><span>Equipment:</span> <span>$${data.equipmentCost}</span></div>
+                    <div class="price-row"><span>Installation:</span> <span>$${data.installCost}</span></div>
+                    <div class="price-row total"><span>TOTAL (One-time):</span> <span>$${data.totalOneTimeCost}</span></div>
+                    <div class="price-row"><span>Monthly Fee:</span> <span>$${data.totalMonthlyCost}</span></div>
+                `;
+        } catch (e) {
+            console.error(e);
+            alert("Connection Error. Is the backend running?");
+        }
+    }
+</script>
+
+</body>
+</html>
