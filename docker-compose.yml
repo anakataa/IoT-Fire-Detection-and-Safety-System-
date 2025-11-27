@@ -1,0 +1,26 @@
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mqtt
+
+  # IoT 
+  iot-sim:
+    build:
+      context: ./iot-sim
+    ports:
+      - "5000:5000"
+
+  # MQTT Broker
+  mqtt:
+    build:
+      context: ./mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mqtt-broker/config:/etc/mosquitto
