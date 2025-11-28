@@ -1,19 +1,19 @@
-FROM gradle:7.0.2-jdk17 AS build
+FROM gradle:8-jdk17 AS build
 
 
 WORKDIR /app
 
 
-COPY ./backend-server /app
+COPY . /app
 
 
-RUN gradle build --no-daemon
+RUN ./gradlew build --no-daemon
 
 
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-alpine
 
 
-COPY --from=build /app/build/libs/*.jar /app/app.jar
+COPY --from=build /app/build/libs/demo-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # Открываем порт для приложения
 EXPOSE 8080

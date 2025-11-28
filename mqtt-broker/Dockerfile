@@ -5,7 +5,8 @@ EXPOSE 1883
 EXPOSE 9001
 
 
-COPY ./mqtt-broker/config/mosquitto.conf /etc/mosquitto/mosquitto.conf
+COPY config/mosquitto.conf /etc/mosquitto/mosquitto.conf
+
 
 # Запуск Mosquitto
 CMD ["mosquitto", "-c", "/etc/mosquitto/mosquitto.conf"]
