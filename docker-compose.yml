@@ -54,5 +54,13 @@ services:
       - pg_data:/var/lib/postgresql/data
       - ./db_init:/docker-entrypoint-initdb.d
 
+  # Adminer
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
 volumes:
   pg_data:
