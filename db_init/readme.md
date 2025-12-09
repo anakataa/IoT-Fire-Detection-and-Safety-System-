@@ -1,12 +1,3 @@
-Ага, я понял проблему 👍
-README **логически норм**, но **Markdown оформлен криво**, поэтому GitHub рендерит его «простынёй».
-
-Ниже — **ПЕРЕОФОРМЛЕННАЯ версия**, которая **гарантированно красиво выглядит в GitHub Preview**
-(заголовки, отступы, код-блоки, списки — всё по правилам).
-
-👉 **Просто замени содержимое README.md целиком**
-
----
 
 ````md
 # Database Initialization (`db-init`)
@@ -123,3 +114,4 @@ This will remove **all existing database data**.
 * Do not store secrets or credentials in SQL files
 * Use environment variables (`.env`) for configuration
 * Modify `init.sql` only when the database structure changes
+
