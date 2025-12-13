@@ -8,7 +8,7 @@
 
 ## 1. Project Overview
 The **Fire Detection and Safety System** is an IoT-based solution designed to enhance safety in homes, offices, and industrial areas.  
-The system uses sensors to detect **smoke, gas leaks, or high temperature** and immediately sends **real-time alerts** to users and emergency services via mobile or web application.  
+The system uses sensors to detect **smoke, gas leaks, or high temperature** and immediately sends **real-time alerts** to users and emergency services.
 
 **Goal:** Reduce response time in fire emergencies and minimize damage or casualties.
 

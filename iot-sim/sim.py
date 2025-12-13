@@ -14,7 +14,7 @@ except ImportError:
 load_dotenv()
 
 # MQTT
-HOST   = os.getenv("BROKER_HOST", "127.0.0.1")
+HOST   = os.getenv("BROKER_HOST", "mqtt")
 PORT   = int(os.getenv("BROKER_PORT", "1883"))
 SITE   = os.getenv("SITE_ID", "lab")
 DEVICE = os.getenv("DEVICE_ID", "smoke-001")

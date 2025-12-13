@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mqtt
+      - postgres
+
+  # IoT Simulator
+  iot-sim:
+    build:
+      context: ./iot-sim
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mqtt
+      - postgres
+    environment:
+      BROKER_HOST: mqtt
+      BROKER_PORT: 1883
+      QOS: 1
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: iot_data
+      PGUSER: iot
+      PGPASSWORD: iotpass
+      PGSSLMODE: disable
+
+  # MQTT Broker
+  mqtt:
+    build:
+      context: ./mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mqtt-broker/config:/etc/mosquitto
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: iot_data
+      POSTGRES_USER: iot
+      POSTGRES_PASSWORD: iotpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db_init:/docker-entrypoint-initdb.d
+
+  # Adminer
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  pg_data:

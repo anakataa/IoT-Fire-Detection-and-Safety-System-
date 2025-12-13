@@ -9,7 +9,7 @@ import psycopg
 load_dotenv()
 
 # --- MQTT ---
-BROKER_HOST = os.getenv("BROKER_HOST", "127.0.0.1")
+BROKER_HOST = os.getenv("BROKER_HOST", "mqtt")
 BROKER_PORT = int(os.getenv("BROKER_PORT", "1883"))
 QOS         = int(os.getenv("QOS", "1"))
 
@@ -29,18 +29,25 @@ PGSSLMODE  = os.getenv("PGSSLMODE", "require")
 _conn = None
 _cur  = None
 
-def pg_connect():
+def pg_connect(retries=5, delay=3):
     global _conn, _cur
-    if _conn and not _conn.closed:
-        return
-    _conn = psycopg.connect(
-        host=PGHOST, port=PGPORT, dbname=PGDATABASE,
-        user=PGUSER, password=PGPASSWORD, sslmode=PGSSLMODE,
-        connect_timeout=10,
-    )
-    _conn.autocommit = True
-    _cur = _conn.cursor()
-    print("[PG] connected")
+    for i in range(retries):
+        try:
+            if _conn and not _conn.closed:
+                return
+            _conn = psycopg.connect(
+                host=PGHOST, port=PGPORT, dbname=PGDATABASE,
+                user=PGUSER, password=PGPASSWORD, sslmode=PGSSLMODE,
+                connect_timeout=10,
+            )
+            _conn.autocommit = True
+            _cur = _conn.cursor()
+            print("[PG] connected")
+            return
+        except Exception as e:
+            print(f"[PG][ERROR] connect failed ({i+1}/{retries}): {e}")
+            time.sleep(delay)
+    raise RuntimeError("Cannot connect to PostgreSQL")
 
 def pg_init_schema():
     pg_connect()
