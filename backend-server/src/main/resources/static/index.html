@@ -2,95 +2,344 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fire Monitoring Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Fire Safety System</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { color: #333; }
-        h2 { color: #555; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 90%; max-width: 800px; margin-top: 100px; }
+        .auth-container { max-width: 400px; text-align: center; margin-top: 0; }
 
-        /* Form Styles */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #218838; }
+        #app-screen { display: none; }
+        #register-form { display: none; }
 
-        /* Result Styles */
-        #result { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; display: none; }
-        .price-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .total { font-weight: bold; font-size: 1.2em; color: #007bff; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;}
+        h2 { color: #333; }
 
-        /* API Links */
-        .links a { display: inline-block; margin-right: 15px; color: #007bff; text-decoration: none; }
-        .links a:hover { text-decoration: underline; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;}
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .link { color: #007bff; cursor: pointer; margin-top: 15px; display: block; font-weight: bold; text-decoration: underline; }
+
+        .nav-tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .nav-item { padding: 10px 20px; cursor: pointer; color: #666; }
+        .nav-item.active { border-bottom: 3px solid #007bff; color: #007bff; font-weight: bold; }
+
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+        .logout-btn { background-color: #dc3545; width: auto; padding: 5px 15px;}
+
+        .device-box { background: #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center;}
+        .device-box input { margin: 0; flex-grow: 1; }
+        .device-box button { margin: 0; width: auto; background-color: #28a745; }
+
+        #alarm-banner {
+            display: none;
+            background-color: #d32f2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border-bottom: 5px solid darkred;
+        }
+
+        #alarm-banner h1 { margin: 0; font-size: 28px; animation: blink 1s infinite; }
+        #alarm-timer { font-size: 40px; font-weight: bold; margin: 10px 0; display: block; }
+
+        .btn-real-fire {
+            background-color: #ffc107; color: black; font-weight: bold; font-size: 18px;
+            padding: 15px 30px; display: block; margin: 10px auto; width: 80%; max-width: 400px;
+            border: 2px solid white;
+        }
+        .btn-false-alarm {
+            background-color: white; color: #d32f2f; font-weight: bold; font-size: 16px;
+            padding: 10px 20px; display: block; margin: 10px auto; width: 60%; max-width: 300px;
+        }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<h1>🔥 Fire System Dashboard</h1>
+<div id="alarm-banner">
+    <h1>🔥 SMOKE DETECTED! IS THIS A FIRE?</h1>
+    <div>Dispatching Fire Dept in: <span id="alarm-timer">60</span>s</div>
 
-<!-- CALCULATOR SECTION -->
-<div class="card">
-    <h2>💰 Cost Calculator</h2>
-    <div class="form-group">
-        <label>Number of Sensors:</label>
-        <input type="number" id="sensors" value="10" min="1">
-    </div>
-    <div class="form-group">
-        <label>Number of Rooms:</label>
-        <input type="number" id="rooms" value="4" min="1">
-    </div>
-    <button onclick="calculateCost()">Calculate Cost</button>
+    <button class="btn-real-fire" onclick="confirmRealFire()">
+        🔥 YES, REAL FIRE! (CALL NOW)
+    </button>
 
-    <div id="result">
-        <!-- Results will appear here -->
-    </div>
+    <button class="btn-false-alarm" onclick="markFalseAlarm()">
+        ✅ NO, FALSE ALARM (CANCEL)
+    </button>
 </div>
 
-<!-- API LINKS SECTION -->
-<div class="card">
-    <h2>📡 API Data (JSON)</h2>
-    <p>Quick links to check raw data:</p>
-    <div class="links">
-        <a href="/api/telemetry" target="_blank">📄 Telemetry (DB)</a>
-        <a href="/api/alarms" target="_blank">🚨 All Alarms</a>
-        <a href="/api/alarms/critical" target="_blank">🔥 Critical Alarms</a>
+<audio id="siren-sound" loop>
+    <source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg">
+</audio>
+
+<div id="login-screen" class="container auth-container">
+    <h2>🔥 System Login</h2>
+    <input type="text" id="login-username" placeholder="Username">
+    <input type="password" id="login-password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <span class="link" onclick="showRegister()">Don't have an account? Register Now</span>
+</div>
+
+<div id="register-screen" class="container auth-container" style="display:none;">
+    <h2>📝 Create Account</h2>
+    <input type="text" id="reg-username" placeholder="Choose Username">
+    <input type="password" id="reg-password" placeholder="Choose Password">
+    <button onclick="register()">Register</button>
+    <span class="link" onclick="showLogin()">Back to Login</span>
+</div>
+
+<div id="app-screen" class="container">
+    <div class="header-controls">
+        <h2>IoT Dashboard <span id="user-display" style="font-size:0.6em; color:gray;"></span></h2>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="device-box">
+        <span>🔌 Link New Device:</span>
+        <input type="text" id="new-device-id" placeholder="e.g. Sensor-1">
+        <button onclick="addDevice()">Add</button>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('telemetry')">📡 Telemetry</div>
+        <div class="nav-item" onclick="switchTab('alarms')">🚨 All Alarms</div>
+        <div class="nav-item" onclick="switchTab('calculator')">💰 Cost Calc</div>
+    </div>
+
+    <div id="telemetry" class="content-section active">
+        <h3>Live Data</h3>
+        <button onclick="loadTelemetry()">Refresh Data</button>
+        <table id="telemetry-table">
+            <thead><tr><th>Time</th><th>User</th><th>Device</th><th>Smoke</th><th>Gas (PPM)</th><th>Temp</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="alarms" class="content-section">
+        <h3>Alarm History</h3>
+        <button onclick="loadAlarms()">Refresh Alarms</button>
+        <table id="alarms-table">
+            <thead><tr><th>Time</th><th>Severity</th><th>Metric</th><th>Value</th><th>Status</th><th>Delete</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="calculator" class="content-section">
+        <h3>Installation Cost Calculator</h3>
+        <input type="number" id="calc-sensors" placeholder="Number of Sensors">
+        <input type="number" id="calc-rooms" placeholder="Number of Rooms">
+        <button onclick="calculateCost()" style="background-color: #17a2b8;">Calculate</button>
+        <div id="calc-result" style="margin-top: 15px; font-weight: bold;"></div>
     </div>
 </div>
 
 <script>
-    async function calculateCost() {
-        const sensors = document.getElementById('sensors').value;
-        const rooms = document.getElementById('rooms').value;
-        const resultDiv = document.getElementById('result');
+    let authHeader = null;
+    let currentUser = "";
+    let activeAlarmId = null;
+
+    function showRegister() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('register-screen').style.display = 'block'; }
+    function showLogin() { document.getElementById('register-screen').style.display = 'none'; document.getElementById('login-screen').style.display = 'block'; }
+
+    async function register() {
+        const user = document.getElementById('reg-username').value;
+        const pass = document.getElementById('reg-password').value;
+        try {
+            const response = await fetch(`/api/auth/register?username=${user}&password=${pass}`, { method: 'POST' });
+            alert(await response.text());
+            if (response.ok) showLogin();
+        } catch (e) { alert("Error"); }
+    }
+
+    async function login() {
+        const user = document.getElementById('login-username').value;
+        const pass = document.getElementById('login-password').value;
+        const credentials = btoa(user + ":" + pass);
+        const header = "Basic " + credentials;
 
         try {
-            // 1. Fetch data from YOUR backend
-            const response = await fetch(`/api/cost?sensors=${sensors}&rooms=${rooms}`);
+            const response = await fetch('/api/auth/check', { headers: { 'Authorization': header } });
+            if (response.ok) {
+                authHeader = header;
+                currentUser = user;
+                localStorage.setItem("savedAuth", header);
+                localStorage.setItem("savedUser", user);
+                document.getElementById('user-display').innerText = "(" + user + ")";
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'block';
+                loadTelemetry();
+            } else { alert("Invalid credentials"); }
+        } catch (e) { alert("Connection error"); }
+    }
 
-            if (!response.ok) {
-                alert("Server Error!");
-                return;
-            }
+    async function logout() {
+        localStorage.removeItem("savedAuth");
+        localStorage.removeItem("savedUser");
+        location.reload();
+    }
 
-            // 2. Get JSON
-            const data = await response.json();
+    async function addDevice() {
+        const deviceId = document.getElementById('new-device-id').value;
+        if(!deviceId) return;
+        const response = await fetch(`/api/auth/add-device?deviceId=${deviceId}&username=${currentUser}`, { method: 'POST' });
+        alert(await response.text());
+    }
 
-            // 3. Display results nicely
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `
-                    <div class="price-row"><span>Equipment:</span> <span>$${data.equipmentCost}</span></div>
-                    <div class="price-row"><span>Installation:</span> <span>$${data.installCost}</span></div>
-                    <div class="price-row total"><span>TOTAL (One-time):</span> <span>$${data.totalOneTimeCost}</span></div>
-                    <div class="price-row"><span>Monthly Fee:</span> <span>$${data.totalMonthlyCost}</span></div>
-                `;
-        } catch (e) {
-            console.error(e);
-            alert("Connection Error. Is the backend running?");
+    function switchTab(tabId) {
+        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+        if(tabId === 'telemetry') loadTelemetry();
+        if(tabId === 'alarms') loadAlarms();
+    }
+
+    async function fetchSecure(url, options = {}) {
+        if (!options.headers) {
+            options.headers = {};
+        }
+        options.headers['Authorization'] = authHeader;
+        return await fetch(url, options);
+    }
+
+    async function loadTelemetry() {
+        if(!authHeader) return;
+        const response = await fetchSecure('/api/telemetry');
+        if (!response.ok) return;
+        const data = await response.json();
+        document.querySelector('#telemetry-table tbody').innerHTML = data.map(t =>
+            `<tr><td>${t.timestamp}</td><td>${t.username}</td><td>${t.deviceId}</td><td>${t.smokePpm}</td><td>${t.gasPpm}</td><td>${t.temperature}</td></tr>`
+        ).join('');
+    }
+
+    async function calculateCost() {
+        const s = document.getElementById('calc-sensors').value;
+        const r = document.getElementById('calc-rooms').value;
+        const response = await fetchSecure(`/api/cost?sensors=${s}&rooms=${r}`);
+        const data = await response.json();
+        document.getElementById('calc-result').innerText = `Total: $${data.totalOneTimeCost} + $${data.totalMonthlyCost}/month`;
+    }
+
+    async function deleteAlarm(id) {
+        if(!confirm("Delete this record?")) return;
+        const response = await fetch(`/api/alarms/${id}`, { method: 'DELETE', headers: { 'Authorization': authHeader } });
+        if(response.ok) loadAlarms();
+    }
+
+    async function confirmRealFire() {
+        if(!activeAlarmId) return;
+        const response = await fetchSecure(`/api/alarms/${activeAlarmId}/confirm`, { method: 'POST' });
+        if (response.ok) {
+            hideBanner();
+            loadAlarms();
+        } else {
+            alert("Error: Server could not confirm alarm.");
         }
     }
-</script>
 
+    async function markFalseAlarm() {
+        if(!activeAlarmId) return;
+        const response = await fetchSecure(`/api/alarms/${activeAlarmId}/cancel`, { method: 'POST' });
+        if (response.ok) {
+            hideBanner();
+            loadAlarms();
+        } else {
+            alert("Error: Server could not cancel alarm.");
+        }
+    }
+
+    function hideBanner() {
+        document.getElementById('alarm-banner').style.display = 'none';
+        document.getElementById('siren-sound').pause();
+        activeAlarmId = null;
+    }
+
+    async function loadAlarms() {
+        if(!authHeader) return;
+        const response = await fetchSecure('/api/alarms');
+        if (!response.ok) return;
+        const data = await response.json();
+        const tbody = document.querySelector('#alarms-table tbody');
+        const now = new Date();
+
+        let showBanner = false;
+        let bannerSeconds = 0;
+
+        tbody.innerHTML = data.map(a => {
+            const alarmTime = new Date(a.timestamp);
+            const diffSeconds = (now - alarmTime) / 1000;
+            let statusHtml = "";
+            let rowColor = "orange";
+
+            if (a.severity === 'CRITICAL') {
+                rowColor = "red";
+
+                if (a.dispatchStatus === 'CANCELLED') {
+                    statusHtml = "✅ False Alarm";
+                    rowColor = "gray";
+                } else if (a.dispatchStatus === 'SENT') {
+                    statusHtml = "🚒 <b>DISPATCHED</b>";
+                    rowColor = "darkred";
+                } else if (diffSeconds < 60) {
+                    const secondsLeft = Math.round(60 - diffSeconds);
+                    statusHtml = `⏳ Pending (${secondsLeft}s)`;
+                    showBanner = true;
+                    activeAlarmId = a.id;
+                    bannerSeconds = secondsLeft;
+                } else {
+                    statusHtml = "🚒 <b>DISPATCHED</b> (Auto)";
+                    rowColor = "darkred";
+                }
+            } else {
+                statusHtml = "⚠️ Warning";
+            }
+
+            return `<tr style="color:${rowColor}; font-weight:bold;">
+                    <td>${a.timestamp}</td><td>${a.severity}</td><td>${a.metric}</td><td>${a.value}</td><td>${statusHtml}</td>
+                    <td><button style="background:red; padding:5px 10px;" onclick="deleteAlarm(${a.id})">X</button></td>
+                </tr>`;
+        }).join('');
+
+        const banner = document.getElementById('alarm-banner');
+        const sound = document.getElementById('siren-sound');
+
+        if (showBanner) {
+            banner.style.display = 'block';
+            document.getElementById('alarm-timer').innerText = bannerSeconds;
+            try { sound.play(); } catch(e) {}
+        } else {
+            banner.style.display = 'none';
+            sound.pause();
+        }
+    }
+
+    window.onload = function() {
+        const savedAuth = localStorage.getItem("savedAuth");
+        const savedUser = localStorage.getItem("savedUser");
+        if (savedAuth && savedUser) {
+            authHeader = savedAuth;
+            currentUser = savedUser;
+            document.getElementById('user-display').innerText = "(" + currentUser + ")";
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'block';
+            loadTelemetry();
+        }
+    };
+
+    setInterval(loadAlarms, 1000);
+</script>
 </body>
 </html>

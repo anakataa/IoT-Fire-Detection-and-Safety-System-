@@ -6,5 +6,7 @@ import java.util.List;
 
 @Repository
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
-    List<Alarm> findBySeverityOrderByTimestampDesc(String severity);
+    List<Alarm> findAllByUsernameOrderByTimestampDesc(String username);
+
+    List<Alarm> findByUsernameAndSeverityOrderByTimestampDesc(String username, String severity);
 }

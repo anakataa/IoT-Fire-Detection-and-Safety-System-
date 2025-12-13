@@ -6,5 +6,5 @@ import java.util.List;
 
 @Repository
 public interface TelemetryRepository extends JpaRepository<Telemetry, Long> {
-    List<Telemetry> findTop20ByOrderByTimestampDesc();
+    List<Telemetry> findTop20ByUsernameOrderByTimestampDesc(String username);
 }
