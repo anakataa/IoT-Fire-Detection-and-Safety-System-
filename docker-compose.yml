@@ -6,7 +6,7 @@ services:
     build:
       context: ./backend-server
     ports:
-      - "8080:8080"
+      - "8080:8081"
     depends_on:
       - mqtt
       - postgres
@@ -64,3 +64,4 @@ services:
 
 volumes:
   pg_data:
+
