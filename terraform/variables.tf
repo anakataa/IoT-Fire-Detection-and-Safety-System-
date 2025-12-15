@@ -1,6 +1,6 @@
 variable "location" {
   description = "The Azure location for resources"
-  default     = "eastus2"
+  default     = "swedencentral"
 }
 
 variable "prefix" {
