@@ -35,7 +35,7 @@ jobs:
 
           # ---  3: BACKEND API ---
           echo "Updating Backend..."
-          ssh "dburan@edu.cdv.pl"@${{ secrets.BACKEND_API_IP }} << 'EOF'
+          ssh -v "dburan@edu.cdv.pl"@${{ secrets.BACKEND_API_IP }} << 'EOF'
             if [ ! -d "IoT-Fire-Detection-and-Safety-System-" ]; then
               git clone https://github.com/anakataa/IoT-Fire-Detection-and-Safety-System-.git
             fi
@@ -117,3 +117,4 @@ jobs:
 #       - name: Deploy PostgreSQL
 #         run: |
 #           ssh azureuser@${{ secrets.POSTGRES_IP }} "sudo systemctl restart postgresql"
+
