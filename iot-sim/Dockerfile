@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # Запуск симулятора
-CMD ["sh", "-c", "python sim.py & python ingestor.py"]
+CMD ["sh", "-c", "ingestor.py & sensor_sim.py"]

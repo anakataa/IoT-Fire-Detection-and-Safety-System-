@@ -7,7 +7,6 @@ This is an IoT system using cloud computing technologies. The project includes:
 - **MQTT Broker** for data exchange between IoT devices and the cloud.
 - **PostgreSQL** for data storage.
 - **Backend API** for business logic.
-- **Azure Blob Storage** for cloud storage (if used).
 
 ## Requirements
 
@@ -20,16 +19,17 @@ This is an IoT system using cloud computing technologies. The project includes:
 
 ### Step 1: Deploy MQTT Broker (Mosquitto)
 
-1. Download and extract the Mosquitto deployment script:
-   ```bash
-   ./mosquitto_deploy.sh
-   ```
+Download and extract the Mosquitto deployment script:
+
+```bash
+./mosquitto_deploy.sh
+```
 
 ### Step 2: Deploy PostgreSQL
 
 Install PostgreSQL:
 
-```
+```bash
 ./postgresql_deploy.sh
 ```
 
@@ -37,7 +37,7 @@ Install PostgreSQL:
 
 Clone the repository and run the Backend API:
 
-```
+```bash
 ./backend_deploy.sh
 ```
 
@@ -45,6 +45,6 @@ Deploying to Azure
 
 To deploy the project to Azure, use the following script:
 
-```
+```bash
 ./azure_deploy.sh
 ```
