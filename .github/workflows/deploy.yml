@@ -20,36 +20,33 @@ jobs:
 
       - name: Deploy to Separate Servers
         run: |
+              ssh-keyscan -H ${{ secrets.BACKEND_API_IP }} >> ~/.ssh/known_hosts
+              ssh-keyscan -H ${{ secrets.MQTT_BROKER_IP }} >> ~/.ssh/known_hosts
+              ssh-keyscan -H ${{ secrets.POSTGRES_IP }} >> ~/.ssh/known_hosts
 
-          ssh-keyscan -H ${{ secrets.BACKEND_API_IP }} >> ~/.ssh/known_hosts
-          ssh-keyscan -H ${{ secrets.MQTT_BROKER_IP }} >> ~/.ssh/known_hosts
-          ssh-keyscan -H ${{ secrets.POSTGRES_IP }} >> ~/.ssh/known_hosts
+              # ---  1: (PostgreSQL) ---
+              echo "Restarting PostgreSQL..."
+              ssh dburan@${{ secrets.POSTGRES_IP }} "sudo systemctl restart postgresql"
 
-          # ---  1: (PostgreSQL) ---
-          echo "Restarting PostgreSQL..."
-          ssh "dburan@edu.cdv.pl"@${{ secrets.POSTGRES_IP }} "sudo systemctl restart postgresql"
+              # ---  2:  (MQTT Mosquitto) ---
+              echo "Restarting MQTT Broker..."
+              ssh dburan@${{ secrets.MQTT_BROKER_IP }} "sudo systemctl restart mosquitto"
 
-          # ---  2:  (MQTT Mosquitto) ---
-          echo "Restarting MQTT Broker..."
-          ssh "dburan@edu.cdv.pl"@${{ secrets.MQTT_BROKER_IP }} "sudo systemctl restart mosquitto"
-
-          # ---  3: BACKEND API ---
-          echo "Updating Backend..."
-          ssh -v "dburan@edu.cdv.pl"@${{ secrets.BACKEND_API_IP }} << 'EOF'
-            if [ ! -d "IoT-Fire-Detection-and-Safety-System-" ]; then
+              # ---  3: BACKEND API ---
+              echo "Updating Backend..."
+              ssh -v dburan@${{ secrets.BACKEND_API_IP }} << 'EOF'
+              if [ ! -d "IoT-Fire-Detection-and-Safety-System-" ]; then
               git clone https://github.com/anakataa/IoT-Fire-Detection-and-Safety-System-.git
-            fi
-            cd IoT-Fire-Detection-and-Safety-System-
-            
-            git pull origin main
+              fi
+              cd IoT-Fire-Detection-and-Safety-System-
 
-            
-            
-            sudo docker-compose up -d --build backend
+              git pull origin main
 
-            # Очистка старых данных
-            sudo docker image prune -f
-          EOF
+              sudo docker-compose up -d --build backend
+
+              # Очистка старых данных
+              sudo docker image prune -f
+              EOF
 
 # name: Deploy IoT & Cloud Computing Project
 # on:
@@ -117,4 +114,5 @@ jobs:
 #       - name: Deploy PostgreSQL
 #         run: |
 #           ssh azureuser@${{ secrets.POSTGRES_IP }} "sudo systemctl restart postgresql"
+
 
