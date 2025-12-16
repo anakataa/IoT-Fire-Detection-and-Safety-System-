@@ -3,7 +3,8 @@ import time
 import json
 import random
 
-BROKER = "localhost"
+# BROKER = "localhost"
+BROKER = "${MQTT_BROKER_IP}"
 PORT = 1883
 TOPIC = "sensors/data"
 DEVICE_ID = "Alexpidr_sensor"
