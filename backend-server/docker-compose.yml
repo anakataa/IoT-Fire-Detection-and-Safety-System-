@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  # Наш Бэкенд
+  backend:
+    build:
+      context: .
+    container_name: fire_backend
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      # --- Подключение к ВМ с Базой (20.240.87.149) ---
+      SPRING_DATASOURCE_URL: jdbc:postgresql://20.240.87.149:5432/iot_data
+      SPRING_DATASOURCE_USERNAME: iot
+      SPRING_DATASOURCE_PASSWORD: iotpass
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+
+      # --- Подключение к ВМ с Брокером (4.165.87.133) ---
+      MQTT_BROKER_URL: "tcp://4.165.87.133:1883"
+
+  # Симулятор датчиков (запускаем тут же, чтобы гнал данные на брокер)
+  iot-sim:
+    build:
+      context: .
+      dockerfile: Dockerfile.sensor
+    container_name: fire_sensor_sim
+    restart: always
+    environment:
+      # Куда слать данные (ВМ Брокера)
+      BROKER_HOST: "4.165.87.133"
+      BROKER_PORT: 1883
+      QOS: 1
+      # Куда писать логи (ВМ Базы)
+      PGHOST: "20.240.87.149"
+      PGPORT: 5432
+      PGDATABASE: iot_data
+      PGUSER: iot
+      PGPASSWORD: iotpass
