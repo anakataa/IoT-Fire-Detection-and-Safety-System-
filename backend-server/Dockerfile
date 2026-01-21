@@ -11,9 +11,10 @@ COPY src ./src
 # Если используешь gradlew wrapper, раскомментируй следующую строку:
 # COPY gradlew ./
 # COPY gradle ./gradle
+ENV GRADLE_OPTS="-Xmx384m -XX:MaxMetaspaceSize=256m"
 
 # Запускаем сборку (пропускаем тесты, чтобы быстрее собрать образ)
-RUN gradle build --no-daemon -x test
+RUN gradle build --no-daemon --info -x test
 
 # --- Этап 2: Запуск (Run) ---
 FROM eclipse-temurin:17-jre-alpine
@@ -29,4 +30,5 @@ COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8081
 
 # Команда запуска
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
