@@ -1,8 +1,8 @@
 package com.example.demo;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value; // 👈 Важный новый импорт
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -18,18 +18,23 @@ import org.springframework.messaging.MessageHandler;
 @Configuration
 public class MqttConfiguration {
 
+    // 👇 1. Читаем адрес из application.properties
+    // Если в файле настройки нет, по умолчанию возьмем tcp://mosquitto:1883
+    @Value("${mqtt.broker.url:tcp://mosquitto:1883}")
+    private String brokerUrl;
+
     @Autowired
     private MqttListenerService mqttListenerService;
 
     @Bean
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
-
         MqttConnectOptions options = new MqttConnectOptions();
 
-        options.setServerURIs(new String[] { "tcp://localhost:1883" });
-        options.setCleanSession(true);
+        // 👇 2. Используем переменную вместо жесткой строки
+        options.setServerURIs(new String[] { brokerUrl });
 
+        options.setCleanSession(true);
         factory.setConnectionOptions(options);
         return factory;
     }
@@ -41,6 +46,7 @@ public class MqttConfiguration {
 
     @Bean
     public MessageProducer inbound() {
+        // Тут можно оставить как есть
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter("java-backend-client-id", mqttClientFactory(), "sensors/data");
 
