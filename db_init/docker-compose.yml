@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: iot_db   # Удобное имя для логов
+    restart: always          # Если упадет или сервер перезагрузится — сама встанет
+    environment:
+      POSTGRES_DB: iot_data
+      POSTGRES_USER: iot
+      POSTGRES_PASSWORD: iotpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      # Важно: убедись, что папка db_init существует рядом с этим файлом
+      - ./db_init:/docker-entrypoint-initdb.d
+
+volumes:
+  pg_data:  # Обязательный блок для хранения данных
