@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  # --- Наш Бэкенд (Java) ---
+  backend:
+    build:
+      context: .
+      # Dockerfile ищется в текущей папке автоматически,
+      # но если файл называется иначе, раскомментируй строку ниже:
+      # dockerfile: Dockerfile
+    container_name: fire_backend
+    restart: always
+    ports:
+      - "8081:8081"
+    # Ограничиваем ресурсы контейнера, чтобы он не убил соседний контейнер
+    deploy:
+      resources:
+        limits:
+          memory: 450M  # Жесткий лимит памяти для контейнера
+    environment:
+      # --- Настройка памяти для Java внутри контейнера ---
+      # Это САМОЕ ВАЖНОЕ: мы говорим Java не брать больше 350 Мб.
+      # Остальное (до 450Мб) пойдет на нужды самой системы внутри контейнера.
+      JAVA_TOOL_OPTIONS: "-Xmx350m"
+
+      # --- Подключение к ВМ с Базой (20.240.87.149) ---
+      SPRING_DATASOURCE_URL: jdbc:postgresql://20.240.87.149:5432/iot_data
+      SPRING_DATASOURCE_USERNAME: iot
+      SPRING_DATASOURCE_PASSWORD: iotpass
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+
+      # --- Подключение к ВМ с Брокером (4.165.87.133) ---
+      MQTT_BROKER_URL: "tcp://4.165.87.133:1883"
+
+  # --- Симулятор датчиков (Python) ---
+  iot-sim:
+    build:
+      context: .
+      dockerfile: Dockerfile.sensor
+    container_name: fire_sensor_sim
+    restart: always
+    # Логично запускать датчик только когда бэкенд уже встал
+    depends_on:
+      - backend
+    environment:
+      # Куда слать данные (ВМ Брокера)
+      BROKER_HOST: "4.165.87.133"
+      BROKER_PORT: 1883
+      QOS: 1
+      # Переменные для Postgres я УДАЛИЛ.
+      # Датчику НЕ НУЖНО писать в базу напрямую, он шлет только в MQTT.
+      # Если ты оставишь старые настройки, это может сбить с толку.
