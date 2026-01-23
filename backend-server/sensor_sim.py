@@ -3,20 +3,24 @@ import time
 import json
 import random
 
-BROKER = "4.165.87.133"
-# BROKER = "${MQTT_BROKER_IP}"
+# --- ВАЖНО: СЮДА ПИШЕМ IP ТВОЕЙ VM 2 (БРОКЕРА) ---
+BROKER = "4.165.87.133" 
 PORT = 1883
 TOPIC = "sensors/data"
 DEVICE_ID = "sens1"
 FIRE_MODE = False
 
-def on_connect(client, userdata, flags, rc):
+print(f"DEBUG: Trying to connect to BROKER: {BROKER} on PORT: {PORT}")
+
+# Обновил аргументы, чтобы работало с новой версией библиотеки без ошибок
+def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         print(f"Connected to MQTT Broker! Device: {DEVICE_ID}")
     else:
         print(f"Failed to connect, return code {rc}")
 
-client = mqtt.Client()
+# Используем новую версию API, чтобы не было Warning в логах
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.on_connect = on_connect
 
 try:
