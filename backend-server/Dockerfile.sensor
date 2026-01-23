@@ -1,0 +1,13 @@
+# Используем легкий Python
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Устанавливаем библиотеку для MQTT
+RUN pip install paho-mqtt
+
+# Копируем твой скрипт
+COPY sensor_sim.py .
+
+# Запускаем скрипт в режиме без буферизации (чтобы логи были видны сразу)
+CMD ["python", "-u", "sensor_sim.py"]
