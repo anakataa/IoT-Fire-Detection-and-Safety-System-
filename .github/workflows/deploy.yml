@@ -26,8 +26,10 @@ jobs:
 
               # ---  1: (PostgreSQL) ---
               echo "Restarting PostgreSQL..."
-              ssh dburan@${{ secrets.POSTGRES_IP }} "ls"
-              
+              ssh -o ConnectTimeout=30 -o StrictHostKeyChecking=no dburan@${{ secrets.POSTGRES_IP }} << 'EOF'
+              if [ ! -d "IoT-Fire-Detection-and-Safety-System-" ]; then
+                git clone https://github.com/anakataa/IoT-Fire-Detection-and-Safety-System-.git
+              fi
               cd IoT-Fire-Detection-and-Safety-System-
               
               git pull 
@@ -37,11 +39,14 @@ jobs:
               sudo docker-compose up -d 
 
               sudo docker ps
+              EOF
 
               # ---  2:  (MQTT Mosquitto) ---
               echo "Restarting MQTT Broker..."
-              ssh dburan@${{ secrets.MQTT_BROKER_IP }} "ls"
-              
+              ssh -o ConnectTimeout=30 -o StrictHostKeyChecking=no dburan@${{ secrets.MQTT_BROKER_IP }} << 'EOF'
+              if [ ! -d "IoT-Fire-Detection-and-Safety-System-" ]; then
+                git clone https://github.com/anakataa/IoT-Fire-Detection-and-Safety-System-.git
+              fi
               cd IoT-Fire-Detection-and-Safety-System-
               
               git pull 
@@ -52,12 +57,13 @@ jobs:
 
               sudo docker-compose up -d 
 
-              sudo docker ps 
+              sudo docker ps
+              EOF 
 
 
               # ---  3: BACKEND API ---
               echo "Updating Backend..."
-              ssh -v dburan@${{ secrets.BACKEND_API_IP }} << 'EOF'
+              ssh -o ConnectTimeout=30 -o StrictHostKeyChecking=no dburan@${{ secrets.BACKEND_API_IP }} << 'EOF'
               if [ ! -d "IoT-Fire-Detection-and-Safety-System-" ]; then
               git clone https://github.com/anakataa/IoT-Fire-Detection-and-Safety-System-.git
               fi
