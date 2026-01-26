@@ -26,11 +26,34 @@ jobs:
 
               # ---  1: (PostgreSQL) ---
               echo "Restarting PostgreSQL..."
-              ssh dburan@${{ secrets.POSTGRES_IP }} "sudo systemctl restart postgresql"
+              ssh dburan@${{ secrets.POSTGRES_IP }} "ls"
+              
+              cd IoT-Fire-Detection-and-Safety-System-
+              
+              git pull 
+
+              cd db_init
+
+              sudo docker-compose up -d 
+
+              sudo docker ps
 
               # ---  2:  (MQTT Mosquitto) ---
               echo "Restarting MQTT Broker..."
-              ssh dburan@${{ secrets.MQTT_BROKER_IP }} "sudo systemctl restart mosquitto"
+              ssh dburan@${{ secrets.MQTT_BROKER_IP }} "ls"
+              
+              cd IoT-Fire-Detection-and-Safety-System-
+              
+              git pull 
+
+              cd mqtt-broker
+
+              cd mosquitto-docker
+
+              sudo docker-compose up -d 
+
+              sudo docker ps 
+
 
               # ---  3: BACKEND API ---
               echo "Updating Backend..."
@@ -40,79 +63,19 @@ jobs:
               fi
               cd IoT-Fire-Detection-and-Safety-System-
 
-              git pull origin main
+              git pull 
 
-              sudo docker-compose up -d --build backend
+              cd backend-server 
 
-              # Очистка старых данных
+              sudo docker-compose down -v
+
+              ./gradlew clean build -x test
+
+              sudo docker-compose up -d --build
+
+              sudo docker ps 
+
               sudo docker image prune -f
               EOF
-
-# name: Deploy IoT & Cloud Computing Project
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       # 1. Используем актуальную версию checkout (v4)
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
-
-#       # 2. Логин в Azure (рекомендуется использовать актуальный v2)
-#       - name: Log in to Azure
-#         uses: azure/login@v2
-#         with:
-#           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-#       # 3. Установка Terraform (обновлена версия до стабильной 1.5+)
-#       - name: Set up Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: 1.7.0
-
-#       - name: Terraform Init
-#         run: terraform init
-
-#       # Добавлен шаг Plan для безопасности (опционально, но полезно)
-#       - name: Terraform Apply
-#         run: terraform apply -auto-approve
-
-#       # 4. Настройка SSH для работы с серверами
-#       - name: Setup SSH Key
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-#           chmod 600 ~/.ssh/id_rsa
-#           # Добавляем хосты в known_hosts, чтобы SSH не запрашивал подтверждение
-#           ssh-keyscan -H ${{ secrets.BACKEND_API_IP }} >> ~/.ssh/known_hosts
-#           ssh-keyscan -H ${{ secrets.MQTT_BROKER_IP }} >> ~/.ssh/known_hosts
-#           ssh-keyscan -H ${{ secrets.POSTGRES_IP }} >> ~/.ssh/known_hosts
-
-#       # 5. Деплой Backend API
-#       # Исправлено: запуск Java через nohup, иначе процесс умрет после закрытия сессии SSH
-#       - name: Deploy Backend API
-#         run: |
-#           ssh azureuser@${{ secrets.BACKEND_API_IP }} << 'EOF'
-#             cd ~/backend-server/backend-server
-#             git pull origin main
-#             ./gradlew clean build -x test
-#             # Убиваем старый процесс перед запуском нового
-#             fuser -k 8080/tcp || true
-#             nohup java -jar build/libs/*.jar > app.log 2>&1 &
-#           EOF
-
-#       # 6. Деплой MQTT брокера
-#       - name: Deploy MQTT Broker
-#         run: |
-#           ssh azureuser@${{ secrets.MQTT_BROKER_IP }} "sudo systemctl restart mosquitto"
-
-#       # 7. Деплой PostgreSQL
-#       - name: Deploy PostgreSQL
-#         run: |
-#           ssh azureuser@${{ secrets.POSTGRES_IP }} "sudo systemctl restart postgresql"
 
 
