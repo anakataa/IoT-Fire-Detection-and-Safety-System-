@@ -4,7 +4,7 @@
 
 
 
-# Fire Detection and Safety System – Business Context
+# Business Context
 
 ## 1. Project Overview
 The **Fire Detection and Safety System** is an IoT-based solution designed to enhance safety in homes, offices, and industrial areas.  
