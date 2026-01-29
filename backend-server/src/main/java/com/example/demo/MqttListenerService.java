@@ -87,6 +87,8 @@ public class MqttListenerService {
         alarm.setAlarmType(type);
         alarm.setSeverity(severity);
 
+        alarm.setDispatchStatus("SENT");
+
         LocalDateTime localTime = data.getTimestamp() != null ? data.getTimestamp() : LocalDateTime.now();
         alarm.setTimestamp(Timestamp.valueOf(localTime));
 
